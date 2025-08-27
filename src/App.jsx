@@ -7,6 +7,16 @@ import StatusPedido from "./frontend/cliente/pages/StatusPedido.jsx";
 import Navbar from "./frontend/cliente/components/Navbar.jsx";
 import Footer from "./frontend/cliente/components/Footer.jsx";
 
+import ProtectedRoute from "./ProtectedRoute.jsx";
+import AdminNavbar from "./frontend/admin/components/AdminNavbar.jsx";
+import Dashboard from "./frontend/admin/pages/Dashboard.jsx";
+import Pedidos from "./frontend/admin/pages/Pedidos.jsx";
+import Usuarios from "./frontend/admin/pages/Usuarios.jsx";
+
+import Login from "./frontend/Login.jsx";
+import SignUp from "./frontend/SignUp.jsx";
+
+
 export default function App() {
   return (
     <>
@@ -17,6 +27,37 @@ export default function App() {
         <Route path="/toy-photo" element={<ToyPhoto />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/status/:ticketId" element={<StatusPedido />} />
+
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+
+
+        <Route path="/admin" element={
+          <ProtectedRoute requireAdmin>
+            <>
+              <AdminNavbar />
+              <Dashboard />
+            </>
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/pedidos" element={
+          <ProtectedRoute requireAdmin>
+            <>
+              <AdminNavbar />
+              <Pedidos />
+            </>
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/usuarios" element={
+          <ProtectedRoute requireAdmin>
+            <>
+              <AdminNavbar />
+              <Usuarios />
+            </>
+          </ProtectedRoute>
+        } />
+
+
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

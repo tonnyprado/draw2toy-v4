@@ -1,10 +1,17 @@
 // src/frontend/pages/StatusPedido.jsx
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { getTicketById, updateTicket } from "../../../backend/db/ticketsService";
+import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
+import { getTicketById, updateTicket } from "../../../backend/db/ticketsService.js"; // 👈 ajusta a tu ruta real (.js)
 
 export default function StatusPedido() {
   const { ticketId } = useParams();
+  const { state } = useLocation();
+  const nav = useNavigate();
+
+  // Si llegaste desde el admin, vienen estas banderitas
+  const fromAdmin = Boolean(state?.fromAdmin);
+  const backTo = state?.backTo || "/admin";
+
   const [ticket, setTicket] = useState(null);
   const [notFound, setNotFound] = useState(false);
   const [email, setEmail] = useState("");
@@ -27,7 +34,6 @@ export default function StatusPedido() {
     setSaving(true);
     try {
       await updateTicket(ticketId, { contactEmail: email });
-      // refresca local
       setTicket((t) => ({ ...t, contactEmail: email }));
       alert("Correo guardado para notificaciones.");
     } catch (e) {
@@ -51,7 +57,11 @@ export default function StatusPedido() {
       <section style={{ padding: 16 }}>
         <h1>Ticket no encontrado</h1>
         <p>Verifica que el número sea correcto.</p>
-        <Link to="/">Volver al inicio</Link>
+        {fromAdmin ? (
+          <button onClick={() => nav(backTo)}>Volver al panel admin</button>
+        ) : (
+          <Link to="/">Volver al inicio</Link>
+        )}
       </section>
     );
   }
@@ -90,7 +100,7 @@ export default function StatusPedido() {
             onChange={(e) => setEmail(e.target.value)}
             style={{ padding: 8, minWidth: 260 }}
           />
-          <button onClick={saveEmail} disabled={!email || saving}>
+        <button onClick={saveEmail} disabled={!email || saving}>
             {saving ? "Guardando..." : "Guardar correo"}
           </button>
         </div>
@@ -101,8 +111,12 @@ export default function StatusPedido() {
         )}
       </div>
 
-      <div style={{ marginTop: 16 }}>
-        <Link to="/">Volver al inicio</Link>
+      <div style={{ marginTop: 16, display: "flex", gap: 12 }}>
+        {fromAdmin ? (
+          <button onClick={() => nav(backTo)}>Volver al panel admin</button>
+        ) : (
+          <Link to="/">Volver al inicio</Link>
+        )}
       </div>
     </section>
   );

@@ -1,15 +1,20 @@
-// src/frontend/components/Navbar.jsx
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useCart } from "../../../context/CartContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 
+import { isAdmin } from "../../../utils/roles.js";
+
 export default function Navbar() {
+
+  
   const { count } = useCart();
   const auth = (typeof useAuth === "function") ? useAuth() : null;
   const user = auth?.user;
   const logout = auth?.logout;
-
+  
+  const amAdmin = isAdmin(user);  
+  
   const [open, setOpen] = useState(false);
   const nav = useNavigate();
 
@@ -74,6 +79,13 @@ export default function Navbar() {
               <li><button style={styles.itemBtn} onClick={goStatusPrompt}>Seguimiento de Pedidos</button></li>
               <li><button style={styles.itemBtn} onClick={() => go("/before")}>Acerca de</button></li>
               <li><button style={styles.itemBtn} onClick={() => go("/contact")}>Contacto</button></li>
+              {amAdmin && (
+                <li>
+                    <button style={styles.itemBtn} onClick={() => go("/admin")}>
+                        Panel de administrador
+                    </button>
+                </li>
+              )}
               {user && (
                 <li>
                   <button
