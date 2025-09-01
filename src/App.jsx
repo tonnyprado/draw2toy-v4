@@ -15,6 +15,10 @@ import Usuarios from "./frontend/admin/pages/Usuarios.jsx";
 
 import Login from "./frontend/Login.jsx";
 import SignUp from "./frontend/SignUp.jsx";
+import DesignerNavbar from "./frontend/designer/components/DesignerNavbar.jsx";
+import DesignerDashboard from "./frontend/designer/pages/DesignerDashboard.jsx";
+import DesignerProtectedRoute from "./DesignerProtectedRoute.jsx";
+import DesignerOrder from "./frontend/designer/pages/DesignerOrder.jsx";
 
 
 export default function App() {
@@ -31,6 +35,28 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
 
+        <Route 
+          path="/designer"
+          element={
+            <DesignerProtectedRoute>
+              <>
+                <DesignerNavbar />
+                <DesignerDashboard />
+              </>
+            </DesignerProtectedRoute>
+          }
+        />
+        <Route 
+          path="/designer/orders/:ticketId"
+          element={
+            <DesignerProtectedRoute>
+              <>
+                <DesignerNavbar />
+                <DesignerOrder />
+              </>
+            </DesignerProtectedRoute>
+          }
+        />
 
         <Route path="/admin" element={
           <ProtectedRoute requireAdmin>

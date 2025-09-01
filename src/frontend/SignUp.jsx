@@ -1,22 +1,30 @@
-// src/frontend/SignUp.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import { isAdmin } from "../utils/roles.js";
+import { isAdmin, isAnyDesigner } from "../utils/roles.js";
 
 export default function SignUp() {
-  const { signUp } = useAuth();
+  const { signUp, user } = useAuth();
   const nav = useNavigate();
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [busy, setBusy] = useState(false);
 
+  useEffect(() => {
+    if (!user) return;
+    if (isAdmin(user)) return nav("/admin", { replace: true });
+    if (isAnyDesigner(user)) return nav("/designer", { replace: true });
+    nav("/", { replace: true });
+  }, [user, nav]);
+
   const onSubmit = async (e) => {
     e.preventDefault();
     setBusy(true);
     try {
-      await signUp(email, pass);
-      if (isAdmin({ email })) return nav("/admin", { replace: true });
+      const cred = await signUp(email, pass);
+      const u = cred?.user || { email };
+      if (isAdmin(u)) return nav("/admin", { replace: true });
+      if (isAnyDesigner(u)) return nav("/designer", { replace: true });
       nav("/", { replace: true });
     } catch (err) {
       alert(err.message || "No se pudo registrar");

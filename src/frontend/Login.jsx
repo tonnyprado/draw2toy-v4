@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import { isAdmin } from "../utils/roles.js";
+import { isAdmin, isAnyDesigner } from "../utils/roles.js";
 
 export default function Login() {
   const { signIn, user } = useAuth();
@@ -11,15 +11,24 @@ export default function Login() {
   const [pass, setPass] = useState("");
   const [busy, setBusy] = useState(false);
 
+  useEffect(() => {
+    if (!user) return;
+    if (state?.from?.pathname) return nav(state.from.pathname, { replace: true });
+    if (isAdmin(user)) return nav("/admin", { replace: true });
+    if (isAnyDesigner(user)) return nav("/designer", { replace: true });
+    nav("/", { replace: true });
+  }, [user, state, nav]);
+
   const onSubmit = async (e) => {
     e.preventDefault();
     setBusy(true);
     try {
-      await signIn(email, pass);
+      const cred = await signIn(email, pass);
+      const u = cred?.user || { email }; 
       // preferencia: volver a donde venías
-      if (state?.from?.pathname) return nav(state.from.pathname, { replace: true });
-      // si es admin, ve al panel
-      if (isAdmin({ email })) return nav("/admin", { replace: true });
+      if (isAdmin(u)) return nav("/admin", { replace: true });
+      // 3) si es diseñador (digital o pattern) → /designer
+      if (isAnyDesigner(u)) return nav("/designer", { replace: true });
       // sino, a home
       nav("/", { replace: true });
     } catch (err) {
