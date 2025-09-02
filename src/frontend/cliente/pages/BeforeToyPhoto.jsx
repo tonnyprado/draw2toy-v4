@@ -1,5 +1,6 @@
 // src/frontend/pages/BeforeToyPhoto.jsx
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function BeforeToyPhoto() {
   const steps = [
@@ -19,34 +20,53 @@ export default function BeforeToyPhoto() {
   ];
 
   const priceRows = [
-    { plan: "Básico", incluye: "Tamaño chico, 1 revisión", precio: "TBD", tiempo: "TBD" },
-    { plan: "Premium", incluye: "Tamaño mediano, 2 revisiones", precio: "TBD", tiempo: "TBD" },
-    { plan: "XL", incluye: "Tamaño grande, 2 revisiones", precio: "TBD", tiempo: "TBD" },
+    { plan: "Básico",   incluye: "Tamaño chico, 1 revisión",  precio: "TBD", tiempo: "TBD" },
+    { plan: "Premium",  incluye: "Tamaño mediano, 2 revisiones", precio: "TBD", tiempo: "TBD" },
+    { plan: "XL",       incluye: "Tamaño grande, 2 revisiones",  precio: "TBD", tiempo: "TBD" },
   ];
+
+  // Reveal on scroll
+  useEffect(() => {
+    const els = Array.from(document.querySelectorAll(".reveal"));
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("is-visible"); }),
+      { threshold: 0.15 }
+    );
+    els.forEach(el => io.observe(el));
+    return () => io.disconnect();
+  }, []);
 
   return (
     <div>
       {/* Hero / CTA inicial */}
-      <section style={styles.hero}>
-        <div style={styles.heroInner}>
-          <h1 style={styles.h1}>¿Cómo funciona?</h1>
-          <p style={styles.p}>Conoce el proceso antes de empezar y mira ejemplos reales.</p>
-          <Link to="/toy-photo" style={styles.primaryBtn}>
-            Crear juguete
-          </Link>
+      <section className="container" style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center", maxWidth: 900 }}>
+          <h1 className="h1 wobble reveal">¿Cómo funciona?</h1>
+          <p className="muted reveal" d-1>Conoce el proceso antes de empezar y mira ejemplos reales.</p>
+          <div className="mt-4">
+            <Link to="/toy-photo" className="btn btn-primary btn-hero floaty reveal" d-2>
+              Crear juguete
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* Pasos */}
-      <section style={styles.section}>
-        <h2 style={styles.h2}>Pasos del proceso</h2>
-        <ol style={styles.steps}>
-          {steps.map(s => (
-            <li key={s.id} style={styles.stepItem}>
-              <div style={styles.stepNum}>{s.id}</div>
+      <section className="container">
+        <h2 className="h2 reveal">Pasos del proceso</h2>
+        <ol className="grid gap-6 mt-6" style={{ listStyle: "none", padding: 0, margin: 0 }}>
+          {steps.map((s, i) => (
+            <li key={s.id} className="reveal" d-1 style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+              <div
+                className="badge"
+                style={{ width: 32, height: 32, display: "grid", placeItems: "center", fontWeight: 700 }}
+                aria-label={`Paso ${s.id}`}
+              >
+                {s.id}
+              </div>
               <div>
-                <div style={styles.stepTitle}>{s.title}</div>
-                <div style={styles.stepDesc}>{s.desc}</div>
+                <div className="h3">{s.title}</div>
+                <div className="muted">{s.desc}</div>
               </div>
             </li>
           ))}
@@ -54,156 +74,73 @@ export default function BeforeToyPhoto() {
       </section>
 
       {/* Video "Cómo se hacen" */}
-      <section style={styles.section}>
-        <h2 style={styles.h2}>Cómo se hacen</h2>
-        <div style={styles.videoBox}>
-          {/* Placeholder de video: reemplaza el src o usa <iframe> si es Youtube/Vimeo */}
-          <video
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            src=""
-            controls
-            muted
-          />
+      <section className="container mt-8">
+        <h2 className="h2 reveal">Cómo se hacen</h2>
+        <div className="card reveal" d-1 style={{ padding: 0 }}>
+          <div style={{
+            width: "100%", height: 380, background: "#F7F8FF",
+            border: "2px dashed var(--border)", borderRadius: "var(--radius-xl)", overflow: "hidden"
+          }}>
+            <video style={{ width: "100%", height: "100%", objectFit: "cover" }} src="" controls muted />
+          </div>
         </div>
-        <p style={styles.pSmall}>
+        <p className="muted reveal" d-2 style={{ marginTop: 8 }}>
           Aquí irá un video corto mostrando el proceso de elaboración (corte, costura, ensamblado).
         </p>
       </section>
 
       {/* Galería */}
-      <section style={styles.section}>
-        <h2 style={styles.h2}>Galería</h2>
-        <div style={styles.grid}>
-          {gallery.map(g => (
-            <figure key={g.id} style={styles.card}>
-              <img
-                src={g.src}
-                alt={g.caption}
-                style={{ width: "100%", height: 160, objectFit: "cover" }}
-              />
-              <figcaption style={styles.caption}>{g.caption}</figcaption>
+      <section className="container mt-8">
+        <h2 className="h2 reveal">Galería</h2>
+        <div className="grid gap-6 mt-6" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))" }}>
+          {gallery.map((g, idx) => (
+            <figure key={g.id} className="card reveal" d-1 style={{ padding: 0, overflow: "hidden" }}>
+              <img src={g.src} alt={g.caption} style={{ width: "100%", height: 180, objectFit: "cover", display: "block" }} />
+              <figcaption style={{ padding: 10, fontSize: 14 }}>{g.caption}</figcaption>
             </figure>
           ))}
         </div>
       </section>
 
       {/* Lista de precios (TBD) */}
-      <section style={styles.section}>
-        <h2 style={styles.h2}>Lista de precios (referencial)</h2>
-        <div style={{ overflowX: "auto" }}>
-          <table style={styles.table}>
+      <section className="container mt-8">
+        <h2 className="h2 reveal">Lista de precios (referencial)</h2>
+        <div className="card reveal" d-1 style={{ overflowX: "auto" }}>
+          <table className="table">
             <thead>
               <tr>
-                <th style={styles.th}>Plan</th>
-                <th style={styles.th}>Incluye</th>
-                <th style={styles.th}>Desde</th>
-                <th style={styles.th}>Tiempo estimado</th>
+                <th>Plan</th>
+                <th>Incluye</th>
+                <th>Desde</th>
+                <th>Tiempo estimado</th>
               </tr>
             </thead>
             <tbody>
               {priceRows.map((r, i) => (
                 <tr key={i}>
-                  <td style={styles.td}>{r.plan}</td>
-                  <td style={styles.td}>{r.incluye}</td>
-                  <td style={styles.td}>{r.precio}</td>
-                  <td style={styles.td}>{r.tiempo}</td>
+                  <td>{r.plan}</td>
+                  <td>{r.incluye}</td>
+                  <td>{r.precio}</td>
+                  <td>{r.tiempo}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <p style={styles.pSmall}>
+        <p className="muted reveal" d-2 style={{ marginTop: 8 }}>
           * Los valores son demostrativos. Ajustaremos precios y tiempos reales con tu OK.
         </p>
       </section>
 
       {/* CTA final */}
-      <section style={styles.finalCta}>
-        <div style={{ textAlign: "center" }}>
-          <h2 style={styles.h2}>¿Listo para convertir un dibujo en un recuerdo?</h2>
-          <p style={styles.p}>Empieza ahora mismo.</p>
-          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            <Link to="/toy-photo" style={styles.primaryBtn}>Comenzar ahora</Link>
-            <Link to="/signup" style={styles.secondaryBtn}>Registrarme</Link>
-          </div>
+      <section className="container mt-8 reveal" style={{ textAlign: "center" }}>
+        <h2 className="h2" style={{ marginTop: 0 }}>¿Listo para convertir un dibujo en un recuerdo?</h2>
+        <p className="muted">Empieza ahora mismo.</p>
+        <div className="flex gap-4" style={{ justifyContent: "center", flexWrap: "wrap" }}>
+          <Link to="/toy-photo" className="btn btn-primary btn-hero floaty">Comenzar ahora</Link>
+          <Link to="/signup" className="btn btn-secondary">Registrarme</Link>
         </div>
       </section>
     </div>
   );
 }
-
-const styles = {
-  hero: {
-    minHeight: "60vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-    borderBottom: "1px solid #eee",
-  },
-  heroInner: { textAlign: "center", maxWidth: 800 },
-  h1: { fontSize: 32, margin: "0 0 8px" },
-  h2: { fontSize: 26, margin: "0 0 12px" },
-  p: { margin: "0 0 12px" },
-  pSmall: { marginTop: 8, opacity: 0.85 },
-
-  primaryBtn: {
-    display: "inline-block",
-    padding: "10px 16px",
-    border: "1px solid #222",
-    background: "#fff",
-    color: "#111",
-    textDecoration: "none",
-    borderRadius: 6,
-    cursor: "pointer",
-  },
-  secondaryBtn: {
-    display: "inline-block",
-    padding: "10px 16px",
-    border: "1px solid #999",
-    background: "#f5f5f5",
-    color: "#222",
-    textDecoration: "none",
-    borderRadius: 6,
-    cursor: "pointer",
-  },
-
-  section: { padding: 24, maxWidth: 1100, margin: "0 auto" },
-
-  steps: { listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 12 },
-  stepItem: { display: "flex", gap: 12, alignItems: "flex-start" },
-  stepNum: {
-    width: 28, height: 28, borderRadius: "50%",
-    display: "grid", placeItems: "center",
-    border: "1px solid #ccc",
-    fontSize: 14,
-  },
-  stepTitle: { fontWeight: 600 },
-  stepDesc: { opacity: 0.9 },
-
-  videoBox: {
-    width: "100%",
-    height: 360,
-    background: "#e9e9e9",
-    border: "1px dashed #ccc",
-  },
-
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-    gap: 16,
-  },
-  card: { border: "1px solid #eee", borderRadius: 8, overflow: "hidden" },
-  caption: { padding: 8, fontSize: 14 },
-
-  table: { width: "100%", borderCollapse: "collapse", minWidth: 600 },
-  th: { textAlign: "left", borderBottom: "1px solid #ddd", padding: "8px 6px" },
-  td: { borderBottom: "1px solid #eee", padding: "8px 6px" },
-
-  finalCta: {
-    padding: 32,
-    borderTop: "1px solid #eee",
-    display: "flex",
-    justifyContent: "center",
-  },
-};

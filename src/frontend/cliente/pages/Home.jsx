@@ -1,219 +1,159 @@
 // src/frontend/pages/Home.jsx
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function Home() {
-  // Placeholder de bloques “imagen + texto”
   const featureBlocks = [
-    {
-      id: 1,
-      title: "Dibujo ➜ Peluche",
-      desc: "Convierte un dibujo infantil en un juguete real paso a paso.",
-      img: "https://placehold.co/800x600?text=Imagen+1", // TODO: reemplazar
-    },
-    {
-      id: 2,
-      title: "Proceso guiado",
-      desc: "Sube el dibujo, completa preferencias y revisa el estado del pedido.",
-      img: "https://placehold.co/800x600?text=Imagen+2",
-    },
-    {
-      id: 3,
-      title: "Revisiones",
-      desc: "Habrá revisiones antes de la producción final para asegurar calidad.",
-      img: "https://placehold.co/800x600?text=Imagen+3",
-    },
-    {
-      id: 4,
-      title: "Entrega",
-      desc: "Recibe el peluche terminado con guía de rastreo.",
-      img: "https://placehold.co/800x600?text=Imagen+4",
-    },
+    { id: 1, title: "Dibujo ➜ Peluche", desc: "Convierte un dibujo infantil en un juguete real paso a paso.", img: "https://placehold.co/1200x900?text=Imagen+1" },
+    { id: 2, title: "Proceso guiado",   desc: "Sube el dibujo, completa preferencias y revisa el estado del pedido.", img: "https://placehold.co/1200x900?text=Imagen+2" },
+    { id: 3, title: "Revisiones",       desc: "Habrá revisiones antes de la producción final para asegurar calidad.", img: "https://placehold.co/1200x900?text=Imagen+3" },
+    { id: 4, title: "Entrega",          desc: "Recibe el peluche terminado con guía de rastreo.",                 img: "https://placehold.co/1200x900?text=Imagen+4" },
   ];
+
+  // IntersectionObserver para revelar elementos al hacer scroll
+  useEffect(() => {
+    const els = Array.from(document.querySelectorAll(".reveal"));
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) e.target.classList.add("is-visible");
+        });
+      },
+      { threshold: 0.15 }
+    );
+    els.forEach(el => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
+  // Parallax MUY sutil a las decoraciones del hero (nubes/burbujas)
+  useEffect(() => {
+    const cloud = document.querySelector(".hero .cloud");
+    const bubble = document.querySelector(".hero .bubble");
+    const onScroll = () => {
+      const y = window.scrollY || 0;
+      if (cloud)  cloud.style.transform  = `translateY(${y * 0.06}px)`;
+      if (bubble) bubble.style.transform = `translateY(${y * 0.04}px)`;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <div>
-      {/* Sección 1: Hero con video de fondo + CTA */}
-      <section style={styles.hero}>
-        {/* VIDEO de fondo (reemplaza el src cuando tengas el archivo/URL) */}
+      {/* HERO: video full con texto encima (sin tarjeta) */}
+      <section
+        className="hero"
+        style={{ minHeight: "100vh", position: "relative", overflow: "hidden", padding: 0 }}
+      >
         <video
-          style={styles.video}
           autoPlay
           loop
           muted
           playsInline
-          // TODO: reemplazar por tu video (mp4/webm). Si no tienes aún, deja el <video> sin src.
-          src=""
+          src=""  /* TODO: coloca aquí tu mp4/webm cuando lo tengas */
+          aria-label="Video de fondo"
+          style={{
+            position: "absolute", inset: 0, width: "100%", height: "100%",
+            objectFit: "cover", zIndex: 0
+          }}
         />
-        {/* Overlay para legibilidad (sin diseño, solo un fondo suave) */}
-        <div style={styles.overlay} />
+        {/* Oscurecer un poco para legibilidad */}
+        <div
+          style={{
+            position: "absolute", inset: 0, zIndex: 1,
+            background: "linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.25))"
+          }}
+        />
 
-        <div style={styles.heroContent}>
-          <h1 style={styles.h1}>Convierte sus dibujos en juguetes</h1>
-          <p style={styles.p}>Sube un dibujo y empieza en segundos.</p>
-          <Link to="/before" style={styles.primaryBtn} aria-label="Ir a BeforeToyPhoto">
-            Comienza creando tu juguete aquí
-          </Link>
+        {/* Decoraciones suaves del tema */}
+        <div className="cloud" />
+        <div className="bubble" />
+
+        {/* Contenido del hero (centrado, sin card) */}
+        <div
+          className="container"
+          style={{
+            position: "relative", zIndex: 2, minHeight: "100vh",
+            display: "flex", flexDirection: "column",
+            alignItems: "center", justifyContent: "center", textAlign: "center", color: "#fff"
+          }}
+        >
+          <h1 className="h1 wobble reveal" style={{ margin: 0 }}>
+            Convierte sus dibujos en juguetes
+          </h1>
+          <p className="reveal" d-1 style={{ marginTop: 10, fontSize: 18, opacity: .95 }}>
+            Sube un dibujo y empieza en segundos.
+          </p>
+          <div className="flex gap-4" style={{ marginTop: 18, flexWrap: "wrap", justifyContent: "center" }}>
+            <Link to="/before" className="btn btn-primary btn-hero floaty reveal" d-2 aria-label="Ir a BeforeToyPhoto">
+              Comienza creando tu juguete aquí
+            </Link>
+            <Link to="/signup" className="btn btn-secondary reveal" d-3>
+              Registrarme
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Sección 2: Texto completo en pantalla */}
-      <section style={styles.fullScreenSection}>
-        <div style={styles.centerCol}>
-          <p style={{ fontSize: 20, maxWidth: 800, textAlign: "center", lineHeight: 1.5 }}>
+      {/* TEXTO pantalla completa */}
+      <section
+        className="container reveal"
+        style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}
+      >
+        <div style={{ maxWidth: 900, textAlign: "center" }}>
+          <p style={{ fontSize: 22, lineHeight: 1.5 }}>
             “Estudios sugieren que el juego con juguetes estimula la creatividad, la resolución de problemas
             y fortalece el vínculo emocional entre niños y familia.”
           </p>
         </div>
       </section>
 
-      {/* Sección 3: Bloques alternados imagen/descripcion (4 pantallas) */}
+      {/* FEATURES alternados con reveal y pequeño “stagger” */}
       {featureBlocks.map((b, idx) => (
-        <section key={b.id} style={styles.featureSection}>
+        <section
+          key={b.id}
+          className="container"
+          style={{ minHeight: "100vh", display: "flex", alignItems: "center" }}
+        >
           <div
+            className="grid gap-8"
             style={{
-              ...styles.featureRow,
-              flexDirection: idx % 2 === 0 ? "row" : "row-reverse",
+              width: "100%", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+              alignItems: "center"
             }}
           >
-            <div style={styles.featureMedia}>
-              {/* Imagen placeholder, reemplaza por tus assets cuando quieras */}
-              <img
-                src={b.img}
-                alt={b.title}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
+            <div style={{ order: idx % 2 === 0 ? 0 : 1 }}>
+              <div className="reveal" d-1 style={{ overflow: "hidden", borderRadius: 20, border: "1px solid var(--border)", boxShadow: "var(--shadow)" }}>
+                <img
+                  src={b.img}
+                  alt={b.title}
+                  style={{ display: "block", width: "100%", height: 420, objectFit: "cover" }}
+                />
+              </div>
             </div>
-            <div style={styles.featureText}>
-              <h2 style={styles.h2}>{b.title}</h2>
-              <p style={styles.p}>{b.desc}</p>
+
+            <div style={{ order: idx % 2 === 0 ? 1 : 0 }}>
+              <h2 className="h2 reveal">{b.title}</h2>
+              <p className="muted reveal" d-2 style={{ fontSize: 18 }}>{b.desc}</p>
             </div>
           </div>
         </section>
       ))}
 
-      {/* Sección 4: CTA final */}
-      <section style={styles.finalSection}>
-        <div style={styles.centerCol}>
-          <h2 style={styles.h2}>¿Listo para empezar?</h2>
-          <p style={styles.p}>Crea tu primer juguete en menos de 2 minutos.</p>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
-            <Link to="/before" style={styles.primaryBtn}>
-              Comienza a crear ahora con un solo click
-            </Link>
-            <Link to="/signup" style={styles.secondaryBtn}>
-              Registrarme
-            </Link>
+      {/* CTA final sin tarjeta */}
+      <section
+        className="container reveal"
+        style={{ minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center" }}
+      >
+        <div>
+          <h2 className="h2" style={{ marginTop: 0 }}>¿Listo para empezar?</h2>
+          <p className="muted">Crea tu primer juguete en menos de 2 minutos.</p>
+          <div className="flex gap-4" style={{ justifyContent: "center", flexWrap: "wrap" }}>
+            <Link to="/before" className="btn btn-primary btn-hero floaty">Comienza a crear ahora con un solo click</Link>
+            <Link to="/signup" className="btn btn-secondary">Registrarme</Link>
           </div>
         </div>
       </section>
     </div>
   );
 }
-
-const styles = {
-  hero: {
-    position: "relative",
-    height: "100vh",
-    overflow: "hidden",
-    background: "#000",
-  },
-  video: {
-    position: "absolute",
-    inset: 0,
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-  },
-  overlay: {
-    position: "absolute",
-    inset: 0,
-    background: "rgba(0,0,0,0.25)", // suaviza para lectura
-  },
-  heroContent: {
-    position: "relative",
-    zIndex: 1,
-    height: "100%",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 12,
-    padding: 16,
-    color: "#fff",
-    textAlign: "center",
-  },
-  h1: { fontSize: 34, margin: 0 },
-  h2: { fontSize: 28, margin: "0 0 8px 0" },
-  p: { margin: 0, opacity: 0.9 },
-  primaryBtn: {
-    display: "inline-block",
-    padding: "10px 16px",
-    border: "1px solid #222",
-    background: "#fff",
-    color: "#111",
-    textDecoration: "none",
-    borderRadius: 6,
-    cursor: "pointer",
-  },
-  secondaryBtn: {
-    display: "inline-block",
-    padding: "10px 16px",
-    border: "1px solid #999",
-    background: "#f5f5f5",
-    color: "#222",
-    textDecoration: "none",
-    borderRadius: 6,
-    cursor: "pointer",
-  },
-
-  fullScreenSection: {
-    minHeight: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-  },
-  centerCol: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  featureSection: {
-    minHeight: "100vh",
-    display: "flex",
-    alignItems: "center",
-    padding: 24,
-  },
-  featureRow: {
-    display: "flex",
-    alignItems: "center",
-    gap: 24,
-    width: "100%",
-    maxWidth: 1100,
-    margin: "0 auto",
-    flexWrap: "wrap", // stackea en pantallas pequeñas
-  },
-  featureMedia: {
-    flex: "1 1 420px",
-    minWidth: 320,
-    height: 320,
-    background: "#e9e9e9",
-    overflow: "hidden",
-  },
-  featureText: {
-    flex: "1 1 420px",
-    minWidth: 320,
-  },
-
-  finalSection: {
-    minHeight: "80vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-    borderTop: "1px solid #eee",
-  },
-};

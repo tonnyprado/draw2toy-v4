@@ -20,75 +20,78 @@ import DesignerDashboard from "./frontend/designer/pages/DesignerDashboard.jsx";
 import DesignerProtectedRoute from "./DesignerProtectedRoute.jsx";
 import DesignerOrder from "./frontend/designer/pages/DesignerOrder.jsx";
 
+import RouteShell from "./frontend/RouteShell.jsx"; // ← NUEVO
+import Contact from "./frontend/cliente/pages/Contact.jsx";
 
 export default function App() {
   return (
     <>
       <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/before" element={<BeforeToyPhoto />} />
-        <Route path="/toy-photo" element={<ToyPhoto />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/status/:ticketId" element={<StatusPedido />} />
+      <RouteShell> {/* ← ENVUELVE TODAS LAS RUTAS */}
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/before" element={<BeforeToyPhoto />} />
+          <Route path="/toy-photo" element={<ToyPhoto />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/status/:ticketId" element={<StatusPedido />} />
 
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
+          <Route path="/contact" element={<Contact />} />
 
-        <Route 
-          path="/designer"
-          element={
-            <DesignerProtectedRoute>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+
+          <Route 
+            path="/designer"
+            element={
+              <DesignerProtectedRoute>
+                <>
+                  <DesignerNavbar />
+                  <DesignerDashboard />
+                </>
+              </DesignerProtectedRoute>
+            }
+          />
+          <Route 
+            path="/designer/orders/:ticketId"
+            element={
+              <DesignerProtectedRoute>
+                <>
+                  <DesignerNavbar />
+                  <DesignerOrder />
+                </>
+              </DesignerProtectedRoute>
+            }
+          />
+
+          <Route path="/admin" element={
+            <ProtectedRoute requireAdmin>
               <>
-                <DesignerNavbar />
-                <DesignerDashboard />
+                <AdminNavbar />
+                <Dashboard />
               </>
-            </DesignerProtectedRoute>
-          }
-        />
-        <Route 
-          path="/designer/orders/:ticketId"
-          element={
-            <DesignerProtectedRoute>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/pedidos" element={
+            <ProtectedRoute requireAdmin>
               <>
-                <DesignerNavbar />
-                <DesignerOrder />
+                <AdminNavbar />
+                <Pedidos />
               </>
-            </DesignerProtectedRoute>
-          }
-        />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/usuarios" element={
+            <ProtectedRoute requireAdmin>
+              <>
+                <AdminNavbar />
+                <Usuarios />
+              </>
+            </ProtectedRoute>
+          } />
 
-        <Route path="/admin" element={
-          <ProtectedRoute requireAdmin>
-            <>
-              <AdminNavbar />
-              <Dashboard />
-            </>
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/pedidos" element={
-          <ProtectedRoute requireAdmin>
-            <>
-              <AdminNavbar />
-              <Pedidos />
-            </>
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/usuarios" element={
-          <ProtectedRoute requireAdmin>
-            <>
-              <AdminNavbar />
-              <Usuarios />
-            </>
-          </ProtectedRoute>
-        } />
-
-
-
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </RouteShell>
       <Footer />
     </>
-    
   );
 }
