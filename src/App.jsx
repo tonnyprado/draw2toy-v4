@@ -22,6 +22,7 @@ import DesignerOrder from "./frontend/designer/pages/DesignerOrder.jsx";
 
 import RouteShell from "./frontend/RouteShell.jsx"; // ← NUEVO
 import Contact from "./frontend/cliente/pages/Contact.jsx";
+import ContactInbox from "./frontend/admin/pages/ContactInbox.jsx";
 
 export default function App() {
   return (
@@ -36,6 +37,9 @@ export default function App() {
           <Route path="/status/:ticketId" element={<StatusPedido />} />
 
           <Route path="/contact" element={<Contact />} />
+          <Route path="/admin/contact" element={<ProtectedRoute>
+            <AdminNavbar /><ContactInbox />
+          </ProtectedRoute>}/>
 
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />

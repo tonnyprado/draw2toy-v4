@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+// ⬇️ AJUSTA ESTA RUTA SEGÚN TU ESTRUCTURA
+import { addContactMessage } from "../../../backend/services/contactService";
 
 export default function Contact() {
   const [name, setName] = useState("");
@@ -9,7 +11,6 @@ export default function Contact() {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-
   // Anti-spam honeypot (debe permanecer vacío)
   const [website, setWebsite] = useState("");
 
@@ -26,23 +27,30 @@ export default function Contact() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    if (website) return; // honeypot
 
-    // honeypot: si trae algo, ignoramos
-    if (website) return;
-
-    // validación mínima
     if (!name.trim() || !email.trim() || !message.trim()) {
       return alert("Por favor completa nombre, email y mensaje.");
     }
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+    if (!emailOk) return alert("Por favor escribe un correo válido.");
+    if (message.length > 2000) return alert("El mensaje no puede superar 2000 caracteres.");
 
     setBusy(true);
     try {
-      // Simulación de envío (conecta aquí Firestore o un endpoint más adelante)
-      await new Promise(res => setTimeout(res, 900));
+      await addContactMessage({
+        name,
+        email,
+        subject,
+        orderId: orderId || null,
+        message,
+        source: "contact_form",
+        sourcePath: window.location.pathname,
+      });
       setSubmitted(true);
-      // Opcional: limpiar
       setName(""); setEmail(""); setSubject("general"); setOrderId(""); setMessage("");
     } catch (err) {
+      console.error(err);
       alert("No se pudo enviar tu mensaje. Intenta de nuevo.");
     } finally {
       setBusy(false);

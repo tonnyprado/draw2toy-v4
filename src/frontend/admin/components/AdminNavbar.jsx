@@ -11,6 +11,8 @@ export default function AdminNavbar() {
         <NavLink to="/admin" style={styles.link}>Dashboard</NavLink>
         <NavLink to="/admin/pedidos" style={styles.link}>Pedidos</NavLink>
         <NavLink to="/admin/usuarios" style={styles.link}>Usuarios</NavLink>
+        <NavLink to="/admin/contact" style={styles.link}>Bandeja de Entrada</NavLink>
+
       </div>
       <div>
         <span style={{ marginRight: 8, opacity: 0.9 }}>{user?.email}</span>
