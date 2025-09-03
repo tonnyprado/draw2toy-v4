@@ -1,3 +1,4 @@
+// src/backend/db/ticketsService.js
 import { db } from "../firebase/firebase.js";
 import {
   addDoc, collection, doc, getDoc, getDocs, query, where,
@@ -7,11 +8,38 @@ import { newTicket } from "../../models/Ticket.js";
 
 const TICKETS = "tickets";
 
-export async function createTicket({ userId = null, items, total, contactEmail = null }) {
+/**
+ * Crea un ticket compatible con reglas:
+ * - Logueado: userId = uid, guest = false/ausente
+ * - Invitado: userId = null, guest = true
+ * - status: "pendiente"
+ */
+export async function createTicket({
+  userId = null,
+  items,
+  total,
+  contactEmail = null,
+  guest = false,          // <- NUEVO: respeta lo que manda Checkout
+  status = "pendiente",   // <- NUEVO: default alineado con rules
+}) {
+  // Tu modelo puede inicializar varios campos; lo usamos como base:
   const base = newTicket({ userId, items, total, contactEmail });
-  const payload = { ...base, createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
-  const ref = await addDoc(collection(db, TICKETS), payload);
-  return { id: ref.id, ...base };
+
+  // Ensamblamos el doc final garantizando campos exigidos por rules
+  const docData = {
+    ...base,
+    userId: userId ?? null,
+    guest: !!guest,
+    status: status || "pendiente",
+    items: Array.isArray(items) ? items : [],
+    total: Number(total || 0),
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+
+  const ref = await addDoc(collection(db, TICKETS), docData);
+  // Devolvemos lo mínimo necesario para navegación
+  return { id: ref.id };
 }
 
 export async function getTicketById(id) {
@@ -31,12 +59,10 @@ export async function adminListTickets() {
   return snaps.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-// Nuevo: actualizar campos arbitrarios de un ticket
 export async function updateTicket(id, updates) {
   await updateDoc(doc(db, TICKETS, id), { ...updates, updatedAt: serverTimestamp() });
 }
 
-// Conserva si te sirve para cambios de estado rápidos
 export async function updateTicketStatus(id, status) {
   return updateTicket(id, { status });
 }

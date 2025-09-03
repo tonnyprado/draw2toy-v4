@@ -2,101 +2,153 @@
 import { useState, useRef, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../../context/CartContext";
+import { uploadDesign } from "../../../backend/services/storageService"; // ← bandera interna controla si sube o no
 
 export default function ToyPhoto() {
   const { add } = useCart();
   const navigate = useNavigate();
 
-  // Estado del formulario
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
-  const [size, setSize] = useState("STANDARD"); // STANDARD | GRANDE
+  const [size, setSize] = useState("STANDARD");
   const [qty, setQty] = useState(1);
 
-  const [saved, setSaved] = useState(false); // bloquea edición tras guardar
-  const fileInputRef = useRef(null);
+  const [saved, setSaved] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
 
-  // Precios demo
+  const objectUrlRef = useRef(null);
+
   const price = useMemo(() => (size === "GRANDE" ? 899 : 499), [size]);
+  const canSave = !!photoFile && qty > 0;
+  const canCheckout = !!photoFile && qty > 0;
 
-  const canSave = qty > 0;      // por ahora no exigimos foto
-  const canCheckout = qty > 0;
+  function clearObjectUrl() {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+  }
 
-  function handlePickFile() { fileInputRef.current?.click(); }
+  function setPreviewFromFile(file) {
+    setErrorMsg(null);
+    clearObjectUrl();
+    try {
+      const url = URL.createObjectURL(file);
+      objectUrlRef.current = url;
+      setPhotoPreview(url);
+      setPhotoFile(file);
+      setSaved(false);
+    } catch (err) {
+      setPhotoPreview(null);
+      setPhotoFile(file);
+      setSaved(false);
+      setErrorMsg("No se pudo previsualizar la imagen, pero el archivo sí se cargó.");
+      console.warn("[ToyPhoto] Error creando objectURL:", err);
+    }
+  }
 
   function handleFileSelected(e) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) return alert("Selecciona una imagen válida");
-    setPhotoFile(file);
-    setPhotoPreview(URL.createObjectURL(file));
+    const type = (file.type || "").toLowerCase();
+    const name = (file.name || "").toLowerCase();
+    const isImageLike = type.startsWith("image/") || name.endsWith(".heic") || name.endsWith(".heif");
+    if (!isImageLike) {
+      alert("Selecciona una imagen válida (JPG, PNG, HEIC/HEIF).");
+      setTimeout(() => (e.target.value = null), 0);
+      return;
+    }
+    setPreviewFromFile(file);
+    // permitir re-seleccionar el mismo archivo
+    setTimeout(() => (e.target.value = null), 0);
   }
 
   function handleDrop(e) {
     e.preventDefault();
+    if (saved) return;
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) return alert("Selecciona una imagen válida");
-    setPhotoFile(file);
-    setPhotoPreview(URL.createObjectURL(file));
+    const type = (file.type || "").toLowerCase();
+    const name = (file.name || "").toLowerCase();
+    const isImageLike = type.startsWith("image/") || name.endsWith(".heic") || name.endsWith(".heif");
+    if (!isImageLike) {
+      alert("Selecciona una imagen válida (JPG, PNG, HEIC/HEIF).");
+      return;
+    }
+    setPreviewFromFile(file);
   }
   function handleDragOver(e) { e.preventDefault(); }
 
   function resetForm() {
+    clearObjectUrl();
     setPhotoFile(null); setPhotoPreview(null);
     setName(""); setDesc(""); setSize("STANDARD"); setQty(1);
-    setSaved(false);
+    setSaved(false); setErrorMsg(null);
   }
 
-  function toCartItem() {
+  // Construye el item; si Storage está deshabilitado, imageUrl será null.
+  async function toCartItemAsync() {
+    let remote = null;
+    if (photoFile) {
+      try {
+        remote = await uploadDesign(photoFile, "custom-toys"); // con flag off → devuelve null
+      } catch (e) {
+        console.warn("[ToyPhoto] Upload deshabilitado o falló, seguimos con preview local:", e);
+      }
+    }
     const id = `custom-${Date.now()}`;
     return {
       id, type: "CUSTOM_TOY",
       name: name.trim() || "Juguete sin nombre",
       description: desc.trim() || undefined,
       size,
-      photoPreview,      // preview local (solo para UI)
+      imageUrl: remote?.url || null, // URL remota (futuro) o null
+      photoPreview,                  // preview local (para UI)
       price,
       qty,
     };
   }
 
-  function handleSaveToCart() {
+  async function handleSaveToCart() {
     if (!canSave) return alert("Necesitas subir una foto y elegir cantidad.");
-    add(toCartItem());
+    add(await toCartItemAsync());
     setSaved(true);
     alert("Diseño guardado en el carrito. Puedes agregar otro o proceder al pago.");
   }
 
-  function handleCheckout() {
+  async function handleCheckout() {
     if (!canCheckout) return alert("Completa la foto y la cantidad antes de continuar.");
-    if (!saved) add(toCartItem());
+    if (!saved) add(await toCartItemAsync());
     navigate("/checkout");
   }
 
-  // Reveal on scroll
-  useEffect(() => {
-    const els = Array.from(document.querySelectorAll(".reveal"));
-    const io = new IntersectionObserver(
-      (entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("is-visible"); }),
-      { threshold: 0.15 }
-    );
-    els.forEach(el => io.observe(el));
-    return () => io.disconnect();
-  }, []);
+  //useEffect(() => () => clearObjectUrl(), []);
 
+  useEffect(() => {
+        const els = Array.from(document.querySelectorAll(".reveal"));
+        const io = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((e) => {
+                    if (e.isIntersecting) e.target.classList.add("is-visible");
+                });
+            },
+            { threshold: 0.15 }
+        );
+        els.forEach((el) => io.observe(el));
+        return () => io.disconnect();
+    }, []);
+
+  // Zona de subida: input ocupa todo el área (opacity:0) para compatibilidad iOS/macOS
   return (
     <section className="container" style={{ padding: 16, maxWidth: 1000, margin: "0 auto" }}>
       <h1 className="h1 wobble reveal" style={{ marginBottom: 12 }}>Arma tu juguete</h1>
 
-      {/* 1) Foto (drag & drop + selector) */}
       <div className="card reveal" d-1 style={{ padding: 0 }}>
         <div
           onDrop={handleDrop}
           onDragOver={handleDragOver}
-          onClick={handlePickFile}
           style={{
             border: "3px dashed var(--border)",
             borderRadius: "var(--radius-xl)",
@@ -108,39 +160,51 @@ export default function ToyPhoto() {
             cursor: saved ? "default" : "pointer",
             overflow: "hidden"
           }}
-          aria-label="Zona para subir la foto (arrastra o haz click)"
+          aria-label="Zona para subir la foto (toca para elegir o arrastra)"
         >
           {photoPreview ? (
             <img
-              src={photoPreview}
-              alt="Vista previa del dibujo"
-              style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+                src={photoPreview}
+                alt="Vista previa del dibujo"
+                style={{
+                    position: "absolute",  // rellena el contenedor
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",  // siempre cabe sin recortar
+                    objectPosition: "center",
+                    display: "block",
+                    pointerEvents: "none"  // para que los clics sigan llegando al input de archivo superpuesto
+                }}
             />
           ) : (
-            <div style={{ textAlign: "center", padding: 16 }}>
-              <p style={{ margin: 0 }}><strong>Arrastra y suelta</strong> aquí la foto del dibujo</p>
-              <p style={{ margin: "6px 0" }}>o</p>
-              <button type="button" className="btn btn-primary" onClick={handlePickFile} disabled={saved}>
-                Elegir desde tu dispositivo
-              </button>
+            <div style={{ textAlign: "center", padding: 16, pointerEvents: "none" }}>
+              <p style={{ margin: 0 }}><strong>Sube la foto del dibujo</strong></p>
               <p className="muted" style={{ marginTop: 8, fontSize: 13 }}>
-                Formatos soportados: JPG, PNG, HEIC (según navegador)
+                Toca el área para elegir (móvil) o arrastra y suelta (desktop).<br />
+                Formatos: JPG, PNG, HEIC/HEIF
               </p>
+              {errorMsg ? <p style={{ color: "crimson", marginTop: 6 }}>{errorMsg}</p> : null}
             </div>
           )}
 
           <input
-            ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,.heic,.heif"
             onChange={handleFileSelected}
-            style={{ display: "none" }}
             disabled={saved}
+            aria-label="Elegir imagen del dispositivo"
+            style={{
+              position: "absolute",
+              inset: 0,
+              opacity: 0,
+              cursor: saved ? "default" : "pointer"
+            }}
           />
         </div>
       </div>
 
-      {/* 2) Nombre + 3) Descripción */}
+      {/* Nombre y descripción */}
       <div className="grid gap-6 mt-6 reveal" d-2>
         <label>
           <div className="h3">Nombre del juguete (opcional)</div>
@@ -169,7 +233,7 @@ export default function ToyPhoto() {
         </label>
       </div>
 
-      {/* 4) Tamaño */}
+      {/* Tamaño */}
       <div className="mt-6 reveal" d-2>
         <div className="h3" style={{ marginBottom: 6 }}>Tamaño</div>
         <div className="flex gap-4" style={{ flexWrap: "wrap" }}>
@@ -198,7 +262,7 @@ export default function ToyPhoto() {
         </div>
       </div>
 
-      {/* 5) Cantidad */}
+      {/* Cantidad */}
       <div className="mt-6 reveal" d-2>
         <div className="h3" style={{ marginBottom: 6 }}>Cantidad</div>
         <div className="flex items-center gap-4" style={{ flexWrap: "wrap" }}>
@@ -216,7 +280,7 @@ export default function ToyPhoto() {
         </div>
       </div>
 
-      {/* Resumen mínimo */}
+      {/* Resumen */}
       <div className="mt-6 muted reveal">
         <div>Precio unitario (demo): ${price}</div>
         <div>Total (demo): ${price * qty}</div>
@@ -238,11 +302,7 @@ export default function ToyPhoto() {
             <button type="button" className="btn" onClick={() => setSaved(false)}>
               Editar este diseño
             </button>
-            <button
-              type="button"
-              className="btn"
-              onClick={() => { handleSaveToCart(); }}
-            >
+            <button type="button" className="btn" onClick={handleSaveToCart}>
               Actualizar diseño en carrito
             </button>
             <button type="button" className="btn btn-primary" onClick={() => navigate("/checkout")}>

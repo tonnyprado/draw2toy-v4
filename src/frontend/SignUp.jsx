@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { isAdmin, isAnyDesigner } from "../utils/roles.js";
+import AuthLayout from "./designer/AuthLayout.jsx";
 
 export default function SignUp() {
   const { signUp, user } = useAuth();
@@ -34,13 +35,46 @@ export default function SignUp() {
   };
 
   return (
-    <section style={{ padding: 16, maxWidth: 400, margin: "0 auto" }}>
-      <h1>Crear cuenta</h1>
-      <form onSubmit={onSubmit} style={{ display: "grid", gap: 8 }}>
-        <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="email" autoComplete="email" />
-        <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="password" autoComplete="new-password" />
-        <button disabled={busy}>{busy ? "Creando..." : "Registrarme"}</button>
+    <AuthLayout
+      title="Crea tu cuenta"
+      subtitle="Es rápido y podrás seguir el progreso de tu peluche."
+      variant="plushies"
+    >
+      <form onSubmit={onSubmit} style={{ display: "grid", gap: 14 }}>
+        <label style={{ display: "grid", gap: 6 }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#4b4f85" }}>Correo</span>
+          <input
+            className="input"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="tucorreo@email.com"
+            autoComplete="email"
+            style={{ fontSize: 16, padding: "12px 14px" }}
+          />
+        </label>
+
+        <label style={{ display: "grid", gap: 6 }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#4b4f85" }}>Contraseña</span>
+          <input
+            className="input"
+            type="password"
+            value={pass}
+            onChange={e => setPass(e.target.value)}
+            placeholder="Mín. 6 caracteres"
+            autoComplete="new-password"
+            style={{ fontSize: 16, padding: "12px 14px" }}
+          />
+        </label>
+
+        <button className="btn btn-primary" disabled={busy} style={{ padding: "12px 16px", fontSize: 16 }}>
+          {busy ? "Creando..." : "Registrarme"}
+        </button>
+
+        <div className="muted" style={{ fontSize: 14 }}>
+          ¿Ya tienes cuenta?{" "}
+          <Link to="/login" className="link">Inicia sesión</Link>
+        </div>
       </form>
-    </section>
+    </AuthLayout>
   );
 }

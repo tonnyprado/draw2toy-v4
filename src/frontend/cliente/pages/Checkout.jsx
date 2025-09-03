@@ -1,14 +1,17 @@
+// src/frontend/pages/Checkout.jsx
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../../context/CartContext.jsx";
 import { useState } from "react";
 import { createTicket, updateTicket } from "../../../backend/db/ticketsService.js";
+import { getAuth } from "firebase/auth";
+import app from "../../../backend/firebase/firebase";
 
 export default function Checkout() {
   const { items, total, updateQty, remove, clear } = useCart();
   const nav = useNavigate();
   const [busy, setBusy] = useState(false);
 
-  // Modal (opcional, lo dejamos listo para más adelante)
+  // Modal opcional
   const [showModal, setShowModal] = useState(false);
   const [ticketId, setTicketId] = useState(null);
   const [email, setEmail] = useState("");
@@ -16,25 +19,43 @@ export default function Checkout() {
   const pagarYCrearTicket = async () => {
     if (!items.length) return alert("Tu carrito está vacío.");
     setBusy(true);
+
     try {
-      const safeItems = items.map(({ id, name, price, qty, size, description, photoURL }) => ({
+      const auth = getAuth(app);
+      const isLogged = !!auth.currentUser;
+
+      const safeItems = items.map(({ id, name, price, qty, size, description, imageUrl, photoURL }) => ({
         productId: id,
         name: name || "Juguete personalizado",
         price: Number(price ?? 0),
         qty: Number(qty ?? 1),
         size: size === "GRANDE" ? "GRANDE" : "STANDARD",
         description: description ? String(description) : null,
-        photoURL: photoURL || null,
+        photoURL: imageUrl || photoURL || null,
       }));
+      const totalCalc = safeItems.reduce((s, it) => s + (it.price * it.qty), 0);
 
-      const ticket = await createTicket({
+      const payload = {
+        // reglas:
+        //  - logueado: userId == uid y guest ausente o false
+        //  - invitado: userId == null y guest == true
+        userId: isLogged ? auth.currentUser.uid : null,
+        ...(isLogged ? {} : { guest: true }),
+        status: "pendiente",
         items: safeItems,
-        total: safeItems.reduce((s, it) => s + (it.price * it.qty), 0),
-      });
+        total: totalCalc,
+        // status lo establece newTicket() como "pendiente" (asegúrate en tu modelo)
+      };
 
+      const ticket = await createTicket(payload);
+
+      try{
+        items.forEach(it => {if (it.photoPreview && String(it.photoPreview).startsWith('blob:')) URL.revokeObjectURL(it.photoPreview); });
+      } catch {}
       clear();
       nav(`/status/${ticket.id}`);
-      // Si quisieras usar el modal en vez de navegar directo:
+
+      // Si prefieres modal en vez de navegar directo:
       // setTicketId(ticket.id); setShowModal(true); clear();
     } catch (e) {
       console.error(e);
@@ -89,6 +110,7 @@ export default function Checkout() {
           <tbody>
             {items.map((it) => {
               const subtotal = (Number(it.price || 0) * Number(it.qty || 1)) || 0;
+              const displayImg = it.imageUrl || it.photoURL || it.photoPreview || null;
               return (
                 <tr key={it.id}>
                   <td>
@@ -97,8 +119,8 @@ export default function Checkout() {
                       background: "#F7F8FF", border: "1px solid #E6E8EC",
                       display: "grid", placeItems: "center", overflow: "hidden"
                     }}>
-                      {it.photoPreview
-                        ? <img src={it.photoPreview} alt={it.name} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "cover" }} />
+                      {displayImg
+                        ? <img src={displayImg} alt={it.name} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "cover" }} />
                         : <span className="muted" style={{ fontSize: 12 }}>Sin imagen</span>}
                     </div>
                   </td>
@@ -128,7 +150,7 @@ export default function Checkout() {
                   <td>${Number(it.price || 0)}</td>
                   <td><strong>${subtotal}</strong></td>
                   <td>
-                    <button className="btn btn-ghost" onClick={() => remove(it.id)}>Quitar</button>
+                    <button className="btn btn-ghost" onClick={() => { try { if (it.photoPreview && it.photoPreview.startsWith('blob:')) URL.revokeObjectURL(it.photoPreview); } catch {} remove(it.id);}}>Quitar</button>
                   </td>
                 </tr>
               );
