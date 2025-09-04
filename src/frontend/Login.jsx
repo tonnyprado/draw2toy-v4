@@ -25,6 +25,7 @@ export default function Login() {
     setBusy(true);
     try {
       const cred = await signIn(email, pass);
+      await syncA
       const u = cred?.user || { email };
       if (state?.from?.pathname) return nav(state.from.pathname, { replace: true });
       if (isAdmin(u)) return nav("/admin", { replace: true });

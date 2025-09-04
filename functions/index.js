@@ -1,32 +1,44 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
+// functions/index.js
+import { setGlobalOptions } from "firebase-functions/v2";
+import { onCall } from "firebase-functions/v2/https";
+import { initializeApp } from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
 
-const {setGlobalOptions} = require("firebase-functions");
-const {onRequest} = require("firebase-functions/https");
-const logger = require("firebase-functions/logger");
-
-// For cost control, you can set the maximum number of containers that can be
-// running at the same time. This helps mitigate the impact of unexpected
-// traffic spikes by instead downgrading performance. This limit is a
-// per-function limit. You can override the limit for each function using the
-// `maxInstances` option in the function's options, e.g.
-// `onRequest({ maxInstances: 5 }, (req, res) => { ... })`.
-// NOTE: setGlobalOptions does not apply to functions using the v1 API. V1
-// functions should each use functions.runWith({ maxInstances: 10 }) instead.
-// In the v1 API, each function can only serve one request per container, so
-// this will be the maximum concurrent request count.
 setGlobalOptions({ maxInstances: 10 });
 
-// Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
+initializeApp();
 
-// exports.helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+/**
+ * ensureAdminClaim (callable)
+ * - Requiere usuario autenticado.
+ * - Si existe admin_users/{uid}, asigna custom claim { admin: true }.
+ * - Devuelve { ok: true/false, reason? }
+ */
+export const ensureAdminClaim = onCall(async (request) => {
+  const authCtx = request.auth;
+  if (!authCtx) {
+    throw new Error("unauthenticated");
+  }
+
+  const uid = authCtx.uid;
+
+  const db = getFirestore();
+  const docRef = db.doc(`admin_users/${uid}`);
+  const snap = await docRef.get();
+
+  if (!snap.exists) {
+    return { ok: false, reason: "not-listed" };
+  }
+
+  // Asigna el claim admin:true
+  await getAuth().setCustomUserClaims(uid, { admin: true });
+
+  // Marca opcional de auditoría
+  await docRef.set(
+    { claimAppliedAt: FieldValue.serverTimestamp() },
+    { merge: true }
+  );
+
+  return { ok: true };
+});
