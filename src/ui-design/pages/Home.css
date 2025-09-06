@@ -1,0 +1,68 @@
+/* ========= HOME LANDING ========= */
+.landing-home{
+  background: #fffdfc;       /* color base por si el canvas tarda */
+  color: var(--text);
+  position: relative;
+}
+
+/* Canvas fijo detrás del contenido */
+.bg-canvas{
+  position: fixed;
+  inset: 0;
+  width: 100vw; height: 100vh;
+  z-index: 0;             /* detrás de todo */
+  pointer-events: none;
+}
+
+/* Contenido por encima del canvas */
+.landing-content{
+  position: relative;
+  z-index: 1;
+}
+
+/* Secciones encima del canvas: ¡transparentes! */
+.section-pastel{
+  position: relative;
+  background: transparent;   /* importante: deja ver el canvas */
+  color: var(--text);
+  overflow: hidden;
+}
+
+/* Alturas/centrado */
+.fullvh { min-height: 100vh; }
+.tall   { min-height: 80vh; }
+.center { display:flex; align-items:center; justify-content:center; }
+
+/* HERO full-bleed con video */
+.hero--full{
+  border-radius: 0;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+.hero--full video { background: #000; }
+
+.hero--full.has-video .container,
+.hero--full.has-video .h1,
+.hero--full.has-video .h2,
+.hero--full.has-video p,
+.hero--full.has-video .btn{
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(0,0,0,.45);
+}
+.hero--full.has-video::after{
+  content:"";
+  position:absolute; inset:0;
+  background: linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.18));
+  z-index:1; pointer-events:none;
+}
+.hero--full.has-video .container{ position: relative; z-index: 2; }
+
+/* Tipografía */
+.section-pastel h1,
+.section-pastel h2,
+.section-pastel p,
+.section-pastel .btn{
+  color: var(--text);
+  text-shadow: none;
+}

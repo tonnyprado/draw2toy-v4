@@ -1,19 +1,27 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import Navbar from "./cliente/components/Navbar.jsx";
+import Footer from "./cliente/components/Footer.jsx";
 
-/** Envoltorio que anima la entrada de cada ruta y hace scrollTop */
 export default function RouteShell({ children }) {
   const { pathname } = useLocation();
+  const isBackoffice = pathname.startsWith("/admin") || pathname.startsWith("/designer");
 
   useEffect(() => {
-    // Lleva al tope en cada cambio de ruta
-    window.scrollTo({ top: 0, behavior: "instant" }); // "instant" evita saltos
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, [pathname]);
 
-  // Clave por pathname => se remonta y dispara la animación .page-shell
   return (
     <div key={pathname} className="page-shell">
-      {children}
+      {/* Navbar/Footer públicos solo en sitio cliente */}
+      {!isBackoffice && <Navbar />}
+
+      {/* 👇 Nada de pt-16: el header sticky ya empuja el contenido */}
+      <main>
+        {children}
+      </main>
+
+      {!isBackoffice && <Footer />}
     </div>
   );
 }

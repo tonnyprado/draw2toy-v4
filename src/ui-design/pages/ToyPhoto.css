@@ -1,0 +1,50 @@
+/* ======= Fondo pastel fijo para esta página ======= */
+.toyphoto-page{
+  position: relative;
+  min-height: 100vh;
+  color: var(--text);
+}
+
+/* Capa fija detrás de TODO: tapa cualquier banda oscura de otras hojas */
+.toyphoto-page::before{
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: #fffdfc; /* pastel claro */
+}
+
+/* No queremos “bloques” con fondos raros dentro de ToyPhoto */
+.toyphoto-page section,
+.toyphoto-page .container{
+  background: transparent;
+}
+
+/* Legibilidad garantizada */
+.toyphoto-page .h1,
+.toyphoto-page .h2,
+.toyphoto-page .h3,
+.toyphoto-page label,
+.toyphoto-page p,
+.toyphoto-page .muted{
+  color: var(--text);
+}
+.toyphoto-page .muted{ color: var(--muted); }
+
+/* Inputs y textarea siempre blancos, borde suave */
+.toyphoto-page .input,
+.toyphoto-page .textarea{
+  background: #fff !important;
+  color: var(--text) !important;
+  border: 2px solid var(--border) !important;
+}
+
+/* Radios alineados bonitos en móviles también */
+.toyphoto-page input[type="radio"]{
+  accent-color: var(--primary);
+}
+
+/* Mejora de la “dropzone” */
+.toyphoto-page .card{
+  background: var(--card);
+}

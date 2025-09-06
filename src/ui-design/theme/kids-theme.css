@@ -244,3 +244,56 @@ body { -ms-overflow-style: none; }
 @media (prefers-reduced-motion: reduce) {
   .page-shell { animation: none; }
 }
+
+/* ------------------------------------------------------------------ */
+/* --------------------- PARCHE MÍNIMO (HOME) ----------------------- */
+/* ------------------------------------------------------------------ */
+
+/* 1) Hero full-bleed SOLO cuando uses la clase adicional .hero--full */
+.hero--full{
+  border-radius: 0;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+.hero--full video { background: #000; } /* si no hay src, que no quede transparente raro */
+
+/* Si hay video y quieres texto legible encima */
+.hero--full.has-video .container,
+.hero--full.has-video .h1,
+.hero--full.has-video .h2,
+.hero--full.has-video p,
+.hero--full.has-video .btn{
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(0,0,0,.45);
+}
+.hero--full.has-video::after{
+  content:"";
+  position:absolute; inset:0;
+  background: linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.18));
+  z-index:1; pointer-events:none;
+}
+.hero--full.has-video .container{ position: relative; z-index: 2; }
+
+/* 2) Navbar transparente arriba y clara al scrollear (manteniendo tu estilo) */
+.navbar{
+  transition: background .25s ease, backdrop-filter .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+.navbar.is-top{
+  background: transparent;
+  border-bottom-color: transparent;
+  box-shadow: none;
+}
+.navbar.is-scrolled{
+  background: #fff;
+  border-bottom: 2px solid #F2F2F8;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 10px rgba(0,0,0,.05);
+}
+
+/* Asegura overlays por encima del header */
+.overlay,
+.auth-overlay { z-index: 60 !important; }
+/* Fallback por si alguna animación deja el panel invisible */
+.menu-panel { opacity: 1 !important; transform: none !important; }
+.menu-item { opacity: 1 !important; transform: none !important; }

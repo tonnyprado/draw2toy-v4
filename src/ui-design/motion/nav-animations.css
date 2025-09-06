@@ -1,0 +1,253 @@
+/* ===== HAMBURGUESA → X ===== */
+.hamburger{
+  position: relative;
+  width: 44px; height: 44px;
+  display:grid; place-items:center;
+  cursor:pointer;
+  border: 2px solid var(--border);
+  background: #fff;
+  border-radius: 12px;
+  transition: transform .15s ease;
+}
+.hamburger .line{
+  width: 18px; height: 3px;
+  background: var(--text);
+  display: block;
+  border-radius: 3px;
+  transition: transform .25s ease, opacity .2s ease, width .2s ease;
+}
+.hamburger .line + .line{ margin-top: 4px; }
+.hamburger.is-active .line:nth-child(1){ transform: translateY(7px) rotate(45deg); width: 20px; }
+.hamburger.is-active .line:nth-child(2){ opacity: 0; }
+.hamburger.is-active .line:nth-child(3){ transform: translateY(-7px) rotate(-45deg); width: 20px; }
+.hamburger:active{ transform: scale(0.98); }
+
+/* ===== OVERLAY con WIPE DIAGONAL (fondo plano) ===== */
+.overlay{
+  position: fixed; inset: 0; z-index: 40;
+  display:flex; justify-content:flex-end;
+  background: transparent;
+  overflow: hidden;
+}
+
+/* Wipe diagonal IN (derecha → izquierda) */
+@keyframes wipe-diagonal-in {
+  0%   { clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%); opacity: 0; }
+  60%  { opacity: 1; }
+  100% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); opacity: 1; }
+}
+/* Wipe diagonal OUT (izquierda → derecha) */
+@keyframes wipe-diagonal-out {
+  0%   { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); opacity: 1; }
+  40%  { opacity: 1; }
+  100% { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); opacity: 0; }
+}
+
+/* Fondo pastel del overlay (base), dejamos detrás de todo */
+.overlay::before{
+  content:"";
+  position:absolute; inset:0; z-index: -2;
+  background:
+    radial-gradient(1200px 600px at 110% 0%, rgba(255,107,107,.10), transparent 60%),
+    radial-gradient(1100px 600px at -10% 100%, rgba(108,99,255,.12), transparent 60%),
+    #FFFFFF;
+}
+
+.overlay.wipe-in{  animation: wipe-diagonal-in .42s cubic-bezier(.2,.7,.2,1) forwards; }
+.overlay.wipe-out{ animation: wipe-diagonal-out .42s cubic-bezier(.2,.7,.2,1) forwards; }
+
+/* ===== FONDO ANIMADO DE PELUCHES ===== */
+.overlay-bg{
+  position:absolute; inset:0; z-index: -1; /* sobre ::before, bajo contenido */
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Plush genérico (SVG osito estilo pastel) */
+:root{
+  --plush-svg: url("data:image/svg+xml;utf8,\
+  <svg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 200 200'>\
+    <g fill='none' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' opacity='0.9'>\
+      <circle cx='50' cy='40' r='16' stroke='%23ffc2c2'/>\
+      <circle cx='150' cy='40' r='16' stroke='%23c2d3ff'/>\
+      <path d='M50 40 Q60 60 80 60' stroke='%23ffc2c2'/>\
+      <path d='M150 40 Q140 60 120 60' stroke='%23c2d3ff'/>\
+      <ellipse cx='100' cy='95' rx='58' ry='50' stroke='%23fae27d'/>\
+      <circle cx='85' cy='82' r='8' stroke='%2399e6da'/>\
+      <circle cx='115' cy='82' r='8' stroke='%23cdb1ff'/>\
+      <path d='M92 100 Q100 108 108 100' stroke='%23ffb3b3'/>\
+      <path d='M72 120 Q60 145 85 150' stroke='%2399e6da'/>\
+      <path d='M128 120 Q140 145 115 150' stroke='%23cdb1ff'/>\
+      <path d='M82 150 Q100 160 118 150' stroke='%23fae27d'/>\
+    </g>\
+  </svg>");
+}
+
+/* Cada “peluche” es un span con ese SVG de fondo en tamaño grande */
+.plush{
+  position: absolute;
+  width: 42vmin; height: 42vmin;     /* tamaños grandes y fluidos */
+  background-image: var(--plush-svg);
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.8;
+  filter: drop-shadow(0 10px 24px rgba(0,0,0,.06));
+  animation: plush-float 11s ease-in-out infinite, plush-sway 9s ease-in-out infinite;
+}
+
+/* Posiciones y variaciones */
+.p1{ left: -6vmin;  top: 8vmin;   transform: rotate(-6deg); }
+.p2{ right: -10vmin; top: 16vmin; transform: rotate(8deg);  animation-duration: 12s, 10.5s; }
+.p3{ left: 12vmin;  bottom: -6vmin; transform: rotate(5deg); animation-duration: 13s, 11s; }
+.p4{ right: 14vmin; bottom: 2vmin;  transform: rotate(-4deg); animation-duration: 12.5s, 9.5s; }
+.p5{ left: 38vmin;  top: 42vmin; transform: rotate(2deg);    width: 48vmin; height: 48vmin; animation-duration: 14s, 12s; }
+.p6{ right: 32vmin; top: 44vmin; transform: rotate(-3deg);   width: 50vmin; height: 50vmin; animation-duration: 15s, 12.5s; }
+
+@keyframes plush-float{
+  0%,100% { transform: translateY(0) rotate(var(--rot,0deg)); }
+  50%     { transform: translateY(-10px) rotate(calc(var(--rot,0deg) + 2deg)); }
+}
+@keyframes plush-sway{
+  0%,100% { filter: drop-shadow(0 10px 24px rgba(0,0,0,.06)); }
+  50%     { filter: drop-shadow(0 14px 30px rgba(0,0,0,.08)); }
+}
+
+/* ===== Botón X del overlay ===== */
+.overlay-close{
+  position: fixed; top: 14px; right: 14px; width: 44px; height: 44px;
+  border: 2px solid var(--border); border-radius: 12px; background:#fff; cursor: pointer;
+  font-size: 28px; line-height: 40px; z-index: 41;
+}
+
+/* ===== PANEL TRANSPARENTE CENTRADO ===== */
+.menu-panel{
+  width: 100vw; height: 100vh;
+  background: transparent;
+  border-left: none; box-shadow: none;
+  padding: clamp(16px, 4vw, 32px);
+
+  display:flex; align-items:center; justify-content:center;
+  transform: translateX(40px);
+  opacity: 0;
+}
+
+/* Slide general del panel (entra/sale desde la derecha) */
+@keyframes slide-in-right {
+  from { transform: translateX(40px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes slide-out-right {
+  from { transform: translateX(0);    opacity: 1; }
+  to   { transform: translateX(40px); opacity: 0; }
+}
+.menu-panel.entering { animation: slide-in-right .36s cubic-bezier(.2,.7,.2,1) forwards; }
+.menu-panel.closing  { animation: slide-out-right .30s cubic-bezier(.2,.7,.2,1) forwards; }
+
+/* ===== LISTA + STAGGER (desde la derecha) ===== */
+.menu-list{
+  list-style: none; padding: 0; margin: 0;
+  display: grid; gap: clamp(12px, 2.6vh, 18px);
+  width: min(92vw, 720px);
+  text-align: center;
+}
+
+@keyframes item-in-right {
+  0%   { opacity: 0; transform: translateX(28px) scale(0.98); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes item-out-right {
+  0%   { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateX(28px) scale(0.98); }
+}
+
+.menu-item{
+  opacity: 0;
+  animation-duration: .34s;
+  animation-timing-function: cubic-bezier(.2,.7,.2,1);
+  animation-fill-mode: forwards;
+  animation-delay: calc(0.055s * var(--i, 1));
+}
+.menu-item.in  { animation-name: item-in-right; }
+.menu-item.out { animation-name: item-out-right; }
+
+/* Botones limpios, hover suave */
+.menu-btn{
+  width: 100%;
+  padding: clamp(14px, 2.6vh, 18px) clamp(14px, 3vw, 18px);
+  font-size: clamp(18px, 2.4vh, 22px);
+  border-radius: var(--radius-xl);
+  border: 2px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  transition: transform .06s ease, box-shadow .2s ease, filter .2s ease;
+}
+.menu-btn:hover{ transform: translateY(-1px); }
+
+/* Navbar glaseada mientras el menú está activo */
+.navbar.menu-open{ backdrop-filter: blur(8px); }
+
+/* ===== BLUNDY arcoíris con brinquito ===== */
+.blundy-logo{
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  color: inherit !important;
+
+  font-size: 22px;
+  font-weight: 800;
+  display: inline-flex;
+  gap: 2px;
+  letter-spacing: 1.2px;
+  line-height: 1;
+}
+
+@keyframes blundy-bounce { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-2px) } }
+@keyframes blundy-color-cycle {
+  0%   { color: #FF6B6B; }
+  20%  { color: #FFD93D; }
+  40%  { color: #6C63FF; }
+  60%  { color: #2EC4B6; }
+  80%  { color: #B28DFF; }
+  100% { color: #FF6B6B; }
+}
+.blundy-logo span{
+  display: inline-block;
+  animation:
+    blundy-bounce 2.8s ease-in-out infinite,
+    blundy-color-cycle 4.5s linear infinite;
+}
+.blundy-logo .b{ animation-delay: 0s,    0s; }
+.blundy-logo .l{ animation-delay: .05s, .15s; }
+.blundy-logo .u{ animation-delay: .10s, .30s; }
+.blundy-logo .n{ animation-delay: .15s, .45s; }
+.blundy-logo .d{ animation-delay: .20s, .60s; }
+.blundy-logo .y{ animation-delay: .25s, .75s; }
+
+/* ===== Respeto a usuarios con Reduce Motion ===== */
+@media (prefers-reduced-motion: reduce){
+  .overlay.wipe-in, .overlay.wipe-out,
+  .menu-panel.entering, .menu-panel.closing,
+  .menu-item.in, .menu-item.out{
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .plush, .blundy-logo span{ animation: none !important; }
+}
+
+/* === Parches de robustez === */
+.overlay { justify-content: center; align-items: center; }  /* ignora el flex-end viejo */
+.overlay .menu-panel { pointer-events: auto; }              /* clickeable siempre */
+
+/* Si algún estilo externo deja el panel invisible, fuerza visibilidad */
+html.menu-open .menu-panel.entering { opacity: 1 !important; transform: none !important; }
+
+/* ===== Parche robustez overlay ===== */
+.overlay { justify-content: center; align-items: center; } /* centrado seguro en todas las páginas */
+
+/* Cuando el menú o modal están abiertos, desactiva transform de la page-shell:
+   evita el bug de stacking/position:fixed en Home */
+html.menu-open .page-shell {
+  animation: none !important;
+  transform: none !important;
+}

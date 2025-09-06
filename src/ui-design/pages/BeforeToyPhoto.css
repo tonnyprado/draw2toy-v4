@@ -1,0 +1,41 @@
+/* Fondo pastel fijo para toda la vista: tapa cualquier “bloque azul” heredado */
+.beforetoy-page{
+  position: relative;
+  min-height: 100vh;
+  color: var(--text);
+}
+.beforetoy-page::before{
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: #fffdfc; /* pastel claro */
+}
+
+/* Nada de fondos raros dentro */
+.beforetoy-page section,
+.beforetoy-page .container{
+  background: transparent;
+}
+
+/* Tipografía legible */
+.beforetoy-page .h1,
+.beforetoy-page .h2,
+.beforetoy-page .h3,
+.beforetoy-page p,
+.beforetoy-page .muted{
+  color: var(--text);
+}
+.beforetoy-page .muted{ color: var(--muted); }
+
+/* Tarjetas y elementos con borde suave y fondo blanco */
+.beforetoy-page .card{
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+/* Tabla: encabezado claro y texto legible */
+.beforetoy-page .table thead th{
+  background: #FAFAFF;
+  color: var(--muted);
+}

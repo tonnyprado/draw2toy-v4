@@ -1,6 +1,7 @@
 // src/frontend/pages/BeforeToyPhoto.jsx
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
+import "../../../ui-design/pages/BeforeToyPhoto.css"; // 👈 estilos locales (fondo pastel + legibilidad)
 
 export default function BeforeToyPhoto() {
   const steps = [
@@ -37,7 +38,7 @@ export default function BeforeToyPhoto() {
   }, []);
 
   return (
-    <div>
+    <div className="beforetoy-page">
       {/* Hero / CTA inicial */}
       <section className="container" style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center", maxWidth: 900 }}>
@@ -55,7 +56,7 @@ export default function BeforeToyPhoto() {
       <section className="container">
         <h2 className="h2 reveal">Pasos del proceso</h2>
         <ol className="grid gap-6 mt-6" style={{ listStyle: "none", padding: 0, margin: 0 }}>
-          {steps.map((s, i) => (
+          {steps.map((s) => (
             <li key={s.id} className="reveal" d-1 style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
               <div
                 className="badge"
@@ -93,7 +94,7 @@ export default function BeforeToyPhoto() {
       <section className="container mt-8">
         <h2 className="h2 reveal">Galería</h2>
         <div className="grid gap-6 mt-6" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))" }}>
-          {gallery.map((g, idx) => (
+          {gallery.map((g) => (
             <figure key={g.id} className="card reveal" d-1 style={{ padding: 0, overflow: "hidden" }}>
               <img src={g.src} alt={g.caption} style={{ width: "100%", height: 180, objectFit: "cover", display: "block" }} />
               <figcaption style={{ padding: 10, fontSize: 14 }}>{g.caption}</figcaption>

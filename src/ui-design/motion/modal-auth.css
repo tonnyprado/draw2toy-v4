@@ -1,0 +1,106 @@
+/* ====== Icon buttons (carrito/usuario) ====== */
+.icon-btn{
+  display: inline-grid;
+  place-items: center;
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+  position: relative;
+  transition: transform .06s ease, box-shadow .2s ease, filter .2s ease;
+}
+.icon-btn:hover{ transform: translateY(-1px); }
+
+/* badge para el carrito */
+.badge-dot{
+  position: absolute; top: -6px; right: -6px;
+  min-width: 18px; height: 18px;
+  padding: 0 4px;
+  background: var(--secondary);
+  color: #fff;
+  font-size: 12px; line-height: 18px;
+  border-radius: 999px;
+  border: 2px solid #fff;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,.12);
+}
+
+/* ====== Modal Auth ====== */
+.auth-overlay{
+  position: fixed; inset: 0; z-index: 50;
+  background: rgba(0,0,0,.18);
+  display:flex; align-items:center; justify-content:center;
+  padding: 16px;
+  backdrop-filter: blur(2px);
+}
+@keyframes fade-in { from { opacity: 0 } to { opacity: 1 } }
+.fade-in{ animation: fade-in .18s ease-out }
+
+.auth-modal{
+  position: relative;
+  width: min(92vw, 520px);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  padding: 20px 18px 22px;
+}
+@keyframes pop-in {
+  from { transform: translateY(10px) scale(.98); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+.pop-in{ animation: pop-in .22s cubic-bezier(.2,.7,.2,1) }
+
+.auth-close{
+  position: absolute; top: 10px; right: 10px;
+  width: 40px; height: 40px;
+  border-radius: 12px; border: 2px solid var(--border);
+  background: #fff; cursor: pointer;
+  font-size: 24px; line-height: 36px;
+}
+
+.auth-title{
+  margin: 8px 8px 4px; text-align: center;
+  font-size: 22px; font-weight: 700;
+}
+.auth-text{
+  margin: 0 8px 16px; text-align: center; color: var(--muted);
+}
+
+.auth-actions{
+  display: grid; gap: 12px;
+  grid-template-columns: 1fr 1fr;
+  padding: 0 8px;
+}
+
+.auth-btn{
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px;
+  padding: 14px 12px;
+  border-radius: 14px;
+  border: 2px solid var(--border);
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform .06s ease, box-shadow .2s ease, filter .2s ease;
+}
+.auth-btn:hover{ transform: translateY(-1px); }
+
+.auth-primary{
+  background: var(--grad-btn);
+  color: #fff;
+  border: 0;
+  box-shadow: 0 8px 20px rgba(108,99,255,.22);
+}
+.auth-secondary{
+  background: var(--grad-cta);
+  color: #1A1A1A;
+  border: 0;
+  box-shadow: 0 8px 20px rgba(255,107,107,.22);
+}
+
+/* responsive: botones en columna en móviles estrechos */
+@media (max-width: 420px){
+  .auth-actions{ grid-template-columns: 1fr; }
+}
