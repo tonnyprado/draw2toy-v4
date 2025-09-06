@@ -167,7 +167,7 @@ button, input, select, textarea{ font: inherit }
 /* ===== Footer ===== */
 .footer{
   margin-top: 24px; padding: 18px var(--space-4);
-  border-top: 2px solid #F2F2F8;
+  
   display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap: wrap;
 }
 .footer-links{ display:flex; gap: 12px; }
@@ -297,3 +297,61 @@ body { -ms-overflow-style: none; }
 /* Fallback por si alguna animación deja el panel invisible */
 .menu-panel { opacity: 1 !important; transform: none !important; }
 .menu-item { opacity: 1 !important; transform: none !important; }
+
+/* ===== Fondo global: crema con garabatos ===== */
+/* 1) Variables (por si quieres ajustar tono/opacity del “vinilo” encima) */
+:root{
+  --bg-scribble-img: url("../../assets/BLUNDY_ART/theme_blundy.JPG"); /* guarda la imagen en /public/img/ */
+  --bg-scribble-size: 600px auto;                 /* ajusta 400–800px según se vea */
+  --bg-scribble-overlay: rgba(255, 255, 240, 0.55); /* capa para legibilidad del texto */
+}
+
+/* 2) Actívalo en TODO el sitio agregando la clase .theme-scribble en <body> o en tu Shell */
+.theme-scribble{
+  background: var(--bg) /* color base como fallback */;
+  position: relative; /* para la pseudo-capa */
+}
+
+/* Patrón de fondo */
+.theme-scribble::before{
+  content:"";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background-image: var(--bg-scribble-img);
+  background-repeat: repeat;      /* usa repeat si tu imagen es “tileable”; si no, cambia a cover */
+  background-size: var(--bg-scribble-size);
+  background-position: top left;
+  background-attachment: fixed;   /* sutil parallax; en móviles se puede desactivar */
+  opacity: 1;
+}
+
+/* Capa de “vinilo” para contraste del texto sobre el patrón */
+.theme-scribble::after{
+  content:"";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--bg-scribble-overlay);
+  pointer-events: none;
+}
+
+/* 3) Cards/secciones legibles sobre el patrón (opcional, reutilizable) */
+.glassy{
+  background: rgba(255,255,255,.72);
+  border: 1px solid rgba(255,255,255,.6);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(6px);
+}
+
+/* 4) Rendimiento / móviles: quitar parallax si hace falta */
+@media (max-width: 420px){
+  .theme-scribble::before{ background-attachment: scroll; }
+}
+
+/* ya lo puedes reutilizar en tus cards */
+.glassy{
+  background: rgba(255,255,255,.72);
+  border: 1px solid rgba(255,255,255,.6);
+  backdrop-filter: blur(6px);
+}

@@ -82,7 +82,7 @@ export default function Contact() {
 
       <div className="grid gap-8 mt-6" style={{ gridTemplateColumns: "1fr" }}>
         {/* Formulario */}
-        <form className="card reveal" d-1 onSubmit={onSubmit} noValidate>
+        <form className="card glassy reveal" d-1 onSubmit={onSubmit} noValidate>
           {/* Honeypot hidden */}
           <input
             type="text"

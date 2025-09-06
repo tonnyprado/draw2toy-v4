@@ -1,11 +1,95 @@
-// src/frontend/pages/ToyPhoto.jsx
+// src/frontend/cliente/pages/ToyPhoto.jsx
 import { useState, useRef, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../../context/CartContext";
 import { uploadDesign } from "../../../backend/services/storageService";
-
-// 🎨 estilos locales de la página (fondo pastel fijo + legibilidad)
 import "../../../ui-design/pages/ToyPhoto.css";
+
+/* === TUS PNGS === */
+import M1 from "../../../assets/no-background/blueguy.png";   // azulito
+import M2 from "../../../assets/no-background/redguy.png";    // naranja
+import M3 from "../../../assets/no-background/greenguy.png";  // verde
+
+/* ================= Sprites animados de fondo ================= */
+const SPRITES = [M1, M2, M3];
+
+function AnimatedSprites({ count = 18 }) {
+  const sprites = useMemo(() => {
+    const rnd   = (min, max) => Math.random() * (max - min) + min;
+    const clamp = (v, a, b)   => Math.min(b, Math.max(a, v));
+
+    // Generamos pares izq/der por fila, sesgando las filas hacia la parte superior
+    const rows = Math.ceil(count / 2);
+    const out = [];
+    for (let r = 0; r < rows && out.length < count; r++) {
+      const t = rows > 1 ? r / (rows - 1) : 0;       // 0..1
+      const eased = Math.pow(t, 1.6);                // ↑ sesgo hacia arriba (eased < t)
+      const baseTop = 8 + 72 * eased;                // 8%..80%
+      const topL = clamp(baseTop + rnd(-4, 4), 6, 82);
+      const topR = clamp(baseTop + rnd(-4, 4), 6, 82);
+
+      const common = () => ({
+        size: `${rnd(170, 280)}px`,
+        ampX: `${rnd(20, 36)}px`,          // amplitud corta → no se van al centro
+        swayDur: `${rnd(10, 16)}s`,
+        bobDur: `${rnd(6, 9)}s`,
+        twistDur: `${rnd(12, 18)}s`,
+        // delays negativos → siempre hay sprites visibles ya en movimiento
+        delayList: `${-rnd(0, 6)}s, ${-rnd(0, 6)}s, ${-rnd(0, 8)}s`,
+        flip: Math.random() > 0.5 ? -1 : 1,
+        rotStart: `${rnd(-4, 4)}deg`,
+        rotMid: `${rnd(-2, 2)}deg`,
+      });
+
+      // IZQUIERDA (2–24%)
+      if (out.length < count) {
+        out.push({
+          src: SPRITES[out.length % SPRITES.length],
+          left: `${rnd(2, 24)}%`,
+          top: `${topL}%`,
+          ...common(),
+        });
+      }
+      // DERECHA (76–98%)
+      if (out.length < count) {
+        out.push({
+          src: SPRITES[out.length % SPRITES.length],
+          left: `${rnd(76, 98)}%`,
+          top: `${topR}%`,
+          ...common(),
+        });
+      }
+    }
+    return out;
+  }, [count]);
+
+  return (
+    <div className="bg-sprites" aria-hidden>
+      {sprites.map((s, idx) => (
+        <img
+          key={idx}
+          src={s.src}
+          alt=""
+          className="sprite"
+          style={{
+            left: s.left,
+            top: s.top,
+            width: s.size,
+            "--ampX": s.ampX,
+            "--swayDur": s.swayDur,
+            "--bobDur": s.bobDur,
+            "--twistDur": s.twistDur,
+            "--flip": s.flip,
+            "--rotStart": s.rotStart,
+            "--rotMid": s.rotMid,
+            animationDelay: s.delayList,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+/* ============================================================ */
 
 export default function ToyPhoto() {
   const { add } = useCart();
@@ -55,8 +139,8 @@ export default function ToyPhoto() {
     const file = e.target.files?.[0];
     if (!file) return;
     const type = (file.type || "").toLowerCase();
-    const name = (file.name || "").toLowerCase();
-    const isImageLike = type.startsWith("image/") || name.endsWith(".heic") || name.endsWith(".heif");
+    const nameF = (file.name || "").toLowerCase();
+    const isImageLike = type.startsWith("image/") || nameF.endsWith(".heic") || nameF.endsWith(".heif");
     if (!isImageLike) {
       alert("Selecciona una imagen válida (JPG, PNG, HEIC/HEIF).");
       setTimeout(() => (e.target.value = null), 0);
@@ -72,8 +156,8 @@ export default function ToyPhoto() {
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
     const type = (file.type || "").toLowerCase();
-    const name = (file.name || "").toLowerCase();
-    const isImageLike = type.startsWith("image/") || name.endsWith(".heic") || name.endsWith(".heif");
+    const nameF = (file.name || "").toLowerCase();
+    const isImageLike = type.startsWith("image/") || nameF.endsWith(".heic") || nameF.endsWith(".heif");
     if (!isImageLike) {
       alert("Selecciona una imagen válida (JPG, PNG, HEIC/HEIF).");
       return;
@@ -136,6 +220,8 @@ export default function ToyPhoto() {
 
   return (
     <div className="toyphoto-page">
+      <AnimatedSprites count={18} />
+
       <section className="container" style={{ padding: 16, maxWidth: 1000, margin: "0 auto" }}>
         <h1 className="h1 wobble reveal" style={{ marginBottom: 12 }}>Arma tu juguete</h1>
 
