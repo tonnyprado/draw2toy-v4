@@ -1,87 +1,186 @@
-/* ======= Fondo + sprites animados SOLO en ToyPhoto ======= */
-.toyphoto-page{
-  position: relative;
-  min-height: 100vh;
-  overflow: hidden;         /* que los sprites no saquen scroll */
-  color: var(--text);
-}
-
-/* Capa 1: patrón */
+/* ===== Página / fondo ===== */
+.toyphoto-page{ position: relative; min-height: 100vh; color: var(--text); overflow: hidden; }
 .toyphoto-page::before{
-  content: "";
-  position: fixed; inset: 0;
-  z-index: -3;
-  background-image: url("/img/bg-scribble.jpg");
-  background-repeat: repeat;
-  background-size: 600px auto;
-  background-position: top left;
-  background-attachment: fixed;
+  content:""; position: fixed; inset:0; z-index:-3;
+  background-image: url("/img/bg-scribble.jpg"); background-repeat: repeat;
+  background-size: 600px auto; background-position: top left; background-attachment: fixed;
+}
+.toyphoto-page::after{ content:""; position:fixed; inset:0; z-index:-1; background: rgba(255,255,240,.55); pointer-events:none; }
+
+/* Sprites */
+.bg-sprites{ position: fixed; inset:0; z-index:-2; pointer-events:none; }
+.sprite{ position:absolute; will-change: transform; opacity:.95; filter: drop-shadow(0 10px 16px rgba(0,0,0,.14));
+  transform: translate3d(var(--tx,0),var(--ty,0),0) rotate(var(--rot,0)) scaleX(var(--flip,1));
+  animation: sway var(--swayDur,12s) ease-in-out infinite alternate,
+             bob var(--bobDur,7s) ease-in-out infinite alternate,
+             twist var(--twistDur,14s) ease-in-out infinite;
+}
+@keyframes sway{ 0%{--tx:calc(-1*var(--ampX,40px))} 50%{--tx:var(--ampX,40px)} 100%{--tx:calc(-1*var(--ampX,40px))} }
+@keyframes bob{ 0%{--ty:0} 50%{--ty:-32px} 100%{--ty:0} }
+@keyframes twist{ 0%{--rot:var(--rotStart,-3deg)} 50%{--rot:var(--rotMid,3deg)} 100%{--rot:var(--rotStart,-3deg)} }
+@media (prefers-reduced-motion: reduce){ .bg-sprites{ display:none } }
+
+/* ===== Carrusel con scroll-snap ===== */
+.slides-viewport{
+  position: relative;
+  width: 100vw; min-height: 100svh;
+  overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+.slides-viewport::-webkit-scrollbar{ display:none; }
+.slides-viewport{ scrollbar-width: none; }
+
+.slides-row{ display:flex; }
+
+/* Slide */
+.slide{
+  scroll-snap-align: start;
+  flex: 0 0 100vw;
+  min-height: 100svh;
+  padding: 24px;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  align-items: center;
+  justify-items: center;
+  gap: 28px;          /* aire extra entre título y card */
+  isolation: isolate; /* stacking propio */
 }
 
-/* Capa 2: “vinilo” crema para legibilidad */
-.toyphoto-page::after{
-  content: "";
-  position: fixed; inset: 0;
-  z-index: -1;
-  background: rgba(255,255,240,.55);
+/* ===== Títulos e instrucciones (sin animación) ===== */
+.slide-title{
+  text-align:center;
+  position: relative;
+  z-index: 3;        /* sobre el card */
   pointer-events: none;
 }
 
-/* Capa 0: sprites animados entre el patrón y el vinilo */
-.bg-sprites{
-  position: fixed; inset: 0;
-  z-index: -2;
-  pointer-events: none;
+/* H1 principal con degradado – FIX de “corte” */
+.slide-title .h1{
+  font-size: clamp(48px, 6.2vw, 72px);
+  line-height: 1.05;
 }
 
-/* Sprite base: se mece horizontal + bob vertical + twist */
-.sprite{
-  position: absolute;
-  will-change: transform;
-  filter: drop-shadow(0 10px 16px rgba(0,0,0,.14));
-  opacity: .95;
-
-  transform: translate3d(var(--tx, 0), var(--ty, 0), 0) rotate(var(--rot, 0)) scaleX(var(--flip, 1));
-
-  animation:
-    sway  var(--swayDur, 12s) ease-in-out infinite alternate,
-    bob   var(--bobDur, 7s)   ease-in-out infinite alternate,
-    twist var(--twistDur, 14s) ease-in-out infinite;
+/* Degradado nítido: sin transform/sombra, con padding y background-size completo */
+.rainbow-text{
+  display:inline-block;
+  padding: .08em 0; /* evita recortes en WebKit */
+  font-family: var(--brand-font);
+  font-weight: 800;
+  background-image: linear-gradient(90deg,#FF3B61 0%,#00C2A8 22%,#2E7BFF 45%,#FFD400 68%,#B06CFC 100%);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent; -webkit-text-fill-color: transparent;
+  /* sin stroke/sombras para que no parezca “comido” por el fondo */
+  -webkit-text-stroke: 0 transparent;
+  text-shadow: none;
+  mix-blend-mode: normal;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Mecido horizontal alrededor del punto ancla (no desaparecen) */
-@keyframes sway{
-  0%   { --tx: calc(-1 * var(--ampX, 40px)); }
-  50%  { --tx: var(--ampX, 40px); }
-  100% { --tx: calc(-1 * var(--ampX, 40px)); }
+/* H2 de cada slide con color (sin animación) */
+.slide-title .h2{
+  font-family: var(--brand-font);
+  font-weight: 800;
+  font-size: clamp(32px, 4.5vw, 48px);
+  line-height: 1.1;
 }
 
-/* Bob vertical actualiza --ty */
-@keyframes bob{
-  0%   { --ty: 0; }
-  50%  { --ty: -32px; }
-  100% { --ty: 0; }
+/* Subtítulo grande */
+.slide-title .muted.big-sub{
+  font-size: clamp(16px, 2.2vw, 22px);
+  margin-top: 4px;
 }
 
-/* Twist actualiza --rot */
-@keyframes twist{
-  0%   { --rot: var(--rotStart, -3deg); }
-  50%  { --rot: var(--rotMid, 3deg); }
-  100% { --rot: var(--rotStart, -3deg); }
+/* Colores por slide (sin animación) */
+.slide:nth-child(1) .slide-title .h2{ /* por si lo usas en el 1er slide */
+  background: linear-gradient(90deg,#6C63FF,#B28DFF);
+  -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent;
+}
+.slide:nth-child(2) .slide-title .h2{ /* Nombre */
+  background: linear-gradient(90deg,#FF6B6B,#FFD93D);
+  -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent;
+}
+.slide:nth-child(3) .slide-title .h2{ /* Descripción */
+  background: linear-gradient(90deg,#2EC4B6,#6C63FF);
+  -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent;
+}
+.slide:nth-child(4) .slide-title .h2{ /* Tamaño/Pedido */
+  background: linear-gradient(90deg,#FF6B6B,#6C63FF);
+  -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-fill-color:transparent;
 }
 
-/* Accesibilidad: apaga sprites si el usuario reduce animaciones */
-@media (prefers-reduced-motion: reduce){
-  .bg-sprites{ display:none; }
-}
+/* Etiquetas de campos dentro de cards con acento de color (sin gradiente) */
+.slide .h3{ color: #2E7BFF; }                       /* azul vivo legible */
+.slide:nth-child(2) .h3{ color: #FF6B6B; }          /* nombre */
+.slide:nth-child(3) .h3{ color: #2EC4B6; }          /* descripción */
+.slide:nth-child(4) .h3{ color: #B28DFF; }          /* tamaño/resumen */
 
-/* Mantén tus estilos del formulario */
-.toyphoto-page section, .toyphoto-page .container{ background: transparent; }
-.toyphoto-page .h1, .toyphoto-page .h2, .toyphoto-page .h3,
-.toyphoto-page label, .toyphoto-page p, .toyphoto-page .muted{ color: var(--text); }
-.toyphoto-page .muted{ color: var(--muted); }
-.toyphoto-page .input, .toyphoto-page .textarea{
-  background:#fff !important; color:var(--text) !important; border:2px solid var(--border) !important;
+/* ===== Card XL centrada ===== */
+.card-xl{
+  width: min(1000px, 92vw);
+  padding: 24px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: var(--shadow);
+  position: relative;
+  z-index: 1;       /* por debajo del título */
 }
-.toyphoto-page input[type="radio"]{ accent-color: var(--primary); }
-.toyphoto-page .card{ background: var(--card); }
+.card-xl.grid-2{ display:grid; grid-template-columns: 1fr 1fr; gap:20px; }
+.card-xl .panel{ background:#fff; border-radius:var(--radius); padding:16px; border:1px solid var(--border); }
+.card-xl .panel.summary .actions{ display:grid; gap:10px; margin-top:12px }
+
+/* ===== Dropzone (click/tap confiable) ===== */
+.dropzone{
+  border:3px dashed var(--border); border-radius:var(--radius-xl);
+  height: clamp(280px, 48vh, 420px);
+  display:grid; place-items:center; background:#fff;
+  position:relative; cursor:pointer; overflow:hidden;
+  touch-action: manipulation;
+  z-index: 0;
+}
+.file-input{
+  position:absolute; inset:0; opacity:0; cursor:pointer;
+  z-index: 2; /* por encima para click nativo */
+}
+.preview{
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:contain; object-position:center; display:block; pointer-events:none;
+}
+.dz-hint{ text-align:center; padding:16px; pointer-events:none; position:relative; z-index:1; }
+.dz-title{ font-size: clamp(16px, 2.2vw, 22px); margin: 0 0 4px; }
+
+/* Campos grandes */
+.field{ display:grid; gap:8px }
+.input.big,.textarea.big{ font-size:18px; padding:14px 16px }
+
+/* Opciones y cantidad */
+.options{ display:grid; gap:10px; margin-top:6px }
+.opt{ display:inline-flex; align-items:center; gap:8px }
+.qty{ display:inline-flex; align-items:center; gap:10px; margin-top:6px }
+
+/* Flechas */
+.nav-arrow{
+  position: fixed; top:50%; transform: translateY(-50%);
+  z-index: 6;
+  width:56px; height:56px;
+  display:grid; place-items:center; font-size:32px; line-height:1;
+  border-radius:999px; border:2px solid var(--border); background:#fff;
+  box-shadow:0 6px 18px rgba(0,0,0,.12); cursor:pointer;
+  transition: transform .08s ease, filter .2s ease, opacity .2s ease;
+}
+.nav-arrow:hover{ transform: translateY(-50%) translateX(1px); filter: brightness(1.04); }
+.nav-arrow:disabled{ opacity:.4; cursor:not-allowed }
+.nav-prev{ left:12px } .nav-next{ right:12px }
+
+/* Progreso */
+.slides-progress{ position:fixed; bottom:16px; left:0; right:0; display:grid; place-items:center; gap:6px; z-index:2 }
+.dots{ display:inline-flex; gap:8px }
+.dot{ width:10px; height:10px; border-radius:999px; background:#E6E8EC; border:1px solid #DADDE3; cursor:pointer }
+.dot.is-active{ background:var(--primary); border-color:transparent; box-shadow:0 0 0 3px rgba(108,99,255,.25) }
+.step-text{ font-size:12px; color:var(--muted) }
